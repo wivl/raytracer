@@ -1,5 +1,3 @@
-#[macro_use]
-extern crate approx; // For the macro relative_eq!
 extern crate nalgebra as na;
 use na::{Point3, Vector3};
 
@@ -10,7 +8,7 @@ pub struct Ray {
 }
 
 impl Ray {
-    pub fn new(origin: Point3<f32>, direction: Vector<f32>) -> Self {
+    pub fn new(origin: Point3<f32>, direction: Vector3<f32>) -> Self {
         Ray {
             orig: origin,
             dir: direction
@@ -21,4 +19,5 @@ impl Ray {
         self.orig + self.dir * t
     }
 }
+
 
