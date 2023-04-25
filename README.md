@@ -1,2 +1,0 @@
-# rustracer
- raytracer in rust
