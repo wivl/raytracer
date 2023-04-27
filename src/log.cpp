@@ -8,6 +8,6 @@ void print_progress(int completed, int total, int width) {
         else if (i == pos) std::cout << ">";
         else std::cout << " ";
     }
-    std::cout << "] " << std::setw(3) << static_cast<int>(completed * 100.0 / total) << " %\r";
+    std::cout << "] " << std::setw(3) << static_cast<int>(completed * 100.0 / total) << " %" << " " << completed << "/" << total << "\r";
     std::cout.flush();
 }
