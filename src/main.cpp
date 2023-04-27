@@ -1,7 +1,9 @@
+#include <_types/_uint8_t.h>
 #include <iostream>
 #include <iomanip>
 #include <thread>
 #include <chrono>
+#include <cmath>
 
 #include <ppmpp.hpp>
 #include <tiny_obj_loader.h>
@@ -53,10 +55,33 @@ int main() {
     return 0;
 }
 
-Color ray_color(const Ray &r) {
-    Vector3f unit_direction = r.direction().normalized();
-    auto t = 0.5 * (unit_direction.y() + 1.0);
+double hit_sphere(const Vector3f &center, float radius, const Ray &r) {
+    Vector3f oc = r.origin() - center;
+    auto a = r.direction().dot(r.direction());
+    auto b = 2.0 * oc.dot(r.direction());
+    auto c = oc.dot(oc) - radius * radius;
+    auto discriminant = b * b - 4 * a * c;
+    if (discriminant < 0) {
+        return -1.0;
+    } else {
+        return (-b - sqrt(discriminant) ) / (2.0*a);
+    }
+}
 
+Color ray_color(const Ray &r) {
+    auto t = hit_sphere(Vector3f(0, 0, -1), 0.5, r);
+    if (t > 0.0) {
+        Vector3f N = (r.at(t) - Vector3f(0, 0, -1)).normalized();
+        Color color(
+                (N.x() + 1.0) * 255.0 / 2.0,
+                (N.y() + 1.0) * 255.0 / 2.0,
+                (N.z() + 1.0) * 255.0 / 2.0
+                );
+        return color;
+    }
+
+    Vector3f unit_direction = r.direction().normalized();
+    t = 0.5 * (unit_direction.y() + 1.0);
     auto c1 = Color(255, 255, 255);
     c1.intensity(1.0-t);
     auto c2 = Color(127, 178, 255);
