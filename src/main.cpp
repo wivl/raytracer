@@ -28,11 +28,22 @@ int main() {
     // camera
     float viewport_height = 2.0;
     float viewport_width = aspect * viewport_height;
+    // image plane is at z = -1
     float focal_length = 1.0;
 
+    // camera position
     Vector3f origin = Vector3f(0, 0, 0);
     Vector3f horizontal = Vector3f(viewport_width, 0, 0);
     Vector3f vertical = Vector3f(0, viewport_height, 0);
+    // the image plane
+    //               vertical
+    //                  ^
+    // -2, 1, -1        |        2, 1, -1
+    //        0, 0, -1  .---> horizontal
+    // -2, -1, -1                2, -1, -1
+    //
+    // the coordinate is in world space
+
     auto lower_left_corner = origin - 
         horizontal / 2 - vertical / 2 -
         Vector3f(0, 0, focal_length);
@@ -42,6 +53,7 @@ int main() {
         for (int w = 0; w < WIDTH; w++) {
             float u = float(w) / (WIDTH - 1);
             float v = float(h) / (HEIGHT - 1);
+            // origin, at
             Ray r(origin, lower_left_corner + u*horizontal + v*vertical - origin);
             Color color = ray_color(r);
             image.set(w, h, color);
