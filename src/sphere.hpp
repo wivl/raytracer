@@ -1,5 +1,5 @@
-#ifndef _SPHERE_H_
-#define _SPHERE_H_
+#ifndef _SPHERE_HPP_
+#define _SPHERE_HPP_
 
 #include "hittable.hpp"
 #include "src/Core/Matrix.h"

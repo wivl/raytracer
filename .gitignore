@@ -4,6 +4,8 @@ image.ppm
 .cache
 build
 *.DS_store
+cmake-build-debug
+.idea
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,c++,cmake
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,c++,cmake

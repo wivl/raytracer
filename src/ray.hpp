@@ -1,5 +1,5 @@
-#ifndef _RAY_H_
-#define _RAY_H_
+#ifndef _RAY_HPP_
+#define _RAY_HPP_
 
 #include <Eigen/Dense>
 #include "Eigen/src/Core/Matrix.h"
@@ -25,4 +25,4 @@ public:
     }
 };
 
-#endif // !_RAY_H_
+#endif // !_RAY_HPP_

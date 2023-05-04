@@ -1,5 +1,5 @@
 #include "sphere.hpp"
-
+#include "src/Core/Matrix.h"
 
 
 bool Sphere::hit(const Ray &r, float t_min, float t_max, HitRecord &rec) const {
@@ -33,9 +33,12 @@ bool Sphere::hit(const Ray &r, float t_min, float t_max, HitRecord &rec) const {
     // one root fits the situation, set record
     rec.t = root;
     rec.p = r.at(rec.t); // point at the sphere surface
+    Vector3f outward_normal = (rec.p - center) / radius;
+    rec.set_face_normal(r, outward_normal);
     rec.normal = (rec.p - center) / radius; // normalized
 
     // valid hit
     return true;
 }
+
 

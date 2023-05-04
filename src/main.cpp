@@ -1,6 +1,7 @@
 #include <_types/_uint8_t.h>
 #include <iostream>
 #include <iomanip>
+#include <memory>
 #include <thread>
 #include <chrono>
 #include <cmath>
@@ -8,60 +9,59 @@
 #include <ppmpp.hpp>
 #include <tiny_obj_loader.h>
 #include <Eigen/Dense>
+#include "camera.hpp"
 #include "src/Core/Matrix.h"
 
+#include "rtmath.hpp"
+#include "hittable.hpp"
+#include "sphere.hpp"
 #include "log.hpp"
 #include "ray.hpp"
+#include "antialiasing.hpp"
 
 using namespace ppm;
 
-Color ray_color(const Ray &r);
+Vector3f ray_color(const Ray &r, const Hittable &world);
+Color color_intensity(Vector3f intensity);
 
 const int WIDTH = 1920;
 const int HEIGHT = 1080;
+const int SPP = 100;
 
 int main() {
     // image
     float aspect = float(WIDTH) / float(HEIGHT);
     Image image(WIDTH, HEIGHT);
+
+    // world
+    HittableList world;
+    world.add(std::make_shared<Sphere>(Vector3f(0, 0, -1), 0.5));
+    world.add(std::make_shared<Sphere>(Vector3f(0, -100.5, -1), 100));
     
     // camera
-    float viewport_height = 2.0;
-    float viewport_width = aspect * viewport_height;
-    // image plane is at z = -1
-    float focal_length = 1.0;
+    Camera camera;
 
-    // camera position
-    Vector3f origin = Vector3f(0, 0, 0);
-    Vector3f horizontal = Vector3f(viewport_width, 0, 0);
-    Vector3f vertical = Vector3f(0, viewport_height, 0);
-    // the image plane
-    //               vertical
-    //                  ^
-    // -2, 1, -1        |        2, 1, -1
-    //        0, 0, -1  .---> horizontal
-    // -2, -1, -1                2, -1, -1
-    //
-    // the coordinate is in world space
-
-    auto lower_left_corner = origin - 
-        horizontal / 2 - vertical / 2 -
-        Vector3f(0, 0, focal_length);
 
     // render
     for (int h = 0; h < HEIGHT; h++) {
         for (int w = 0; w < WIDTH; w++) {
-            float u = float(w) / (WIDTH - 1);
-            float v = float(h) / (HEIGHT - 1);
-            // origin, at
-            Ray r(origin, lower_left_corner + u*horizontal + v*vertical - origin);
-            Color color = ray_color(r);
-            image.set(w, h, color);
+            Vector3f intensity(0, 0, 0);
+            for (int s = 0; s < SPP; s++) {
+                float u = float(w) / (WIDTH - 1);
+                float v = float(h) / (HEIGHT - 1);
+                // origin, at
+                Ray r = camera.get_ray(u, v);
+                Vector3f sample = ray_color(r, world);
+                intensity += sample;
+            }
+            muliple_samples(intensity, SPP);
+            image.set(w, h, color_intensity(intensity));
             print_progress(h*WIDTH+w, WIDTH*HEIGHT, 40);
         }
     }
     std::cout << std::endl << "Done." << std::endl;
 
+    image.vflip();
     image.save("../image.ppm");
 
     return 0;
@@ -80,24 +80,32 @@ double hit_sphere(const Vector3f &center, float radius, const Ray &r) {
     }
 }
 
-Color ray_color(const Ray &r) {
-    auto t = hit_sphere(Vector3f(0, 0, -1), 0.5, r);
-    if (t > 0.0) {
-        Vector3f N = (r.at(t) - Vector3f(0, 0, -1)).normalized();
-        Color color(
-                (N.x() + 1.0) * 255.0 / 2.0,
-                (N.y() + 1.0) * 255.0 / 2.0,
-                (N.z() + 1.0) * 255.0 / 2.0
-                );
-        return color;
+Vector3f ray_color(const Ray &r, const Hittable &world) {
+    HitRecord rec;
+    if (world.hit(r, 0, infinity, rec)) {
+        // Vector3f N = (r.at(t) - Vector3f(0, 0, -1)).normalized();
+        // Color color(
+                // (rec.normal.x() + 1.0) * 255.0 / 2.0,
+                // (rec.normal.y() + 1.0) * 255.0 / 2.0,
+                // (rec.normal.z() + 1.0) * 255.0 / 2.0
+                // );
+        // return color;
+        return rec.normal;
     }
 
     Vector3f unit_direction = r.direction().normalized();
-    t = 0.5 * (unit_direction.y() + 1.0);
-    auto c1 = Color(255, 255, 255);
-    c1.intensity(1.0-t);
-    auto c2 = Color(127, 178, 255);
-    c2.intensity(t);
-
+    auto t = 0.5 * (unit_direction.y() + 1.0);
+    // auto c1 = Color(255, 255, 255);
+    auto c1 = Vector3f(1.0, 1.0, 1.0) * (1-t);
+    // auto c2 = Color(127, 178, 255);
+    auto c2 = Vector3f(0.5, 0.7, 1.0) * t;
     return c1 + c2;
+}
+
+Color color_intensity(Vector3f intensity) {
+    return Color(
+            static_cast<uint8_t>(255 * intensity.x()),
+            static_cast<uint8_t>(255 * intensity.y()),
+            static_cast<uint8_t>(255 * intensity.z())
+        );
 }
