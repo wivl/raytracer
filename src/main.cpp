@@ -26,7 +26,7 @@ Color color_intensity(Vector3f intensity);
 
 const int WIDTH = 1920;
 const int HEIGHT = 1080;
-const int SPP = 100;
+const int SPP = 50;
 
 int main() {
     // image
@@ -46,19 +46,25 @@ int main() {
     for (int h = 0; h < HEIGHT; h++) {
         for (int w = 0; w < WIDTH; w++) {
             Vector3f intensity(0, 0, 0);
+            // anti-aliasing
             for (int s = 0; s < SPP; s++) {
-                float u = float(w) / (WIDTH - 1);
-                float v = float(h) / (HEIGHT - 1);
+                float u = float(w + random_double()) / (WIDTH - 1);
+                float v = float(h + random_double()) / (HEIGHT - 1);
                 // origin, at
                 Ray r = camera.get_ray(u, v);
                 Vector3f sample = ray_color(r, world);
+                sample.x() = clamp(sample.x(), 0, 1);
+                sample.y() = clamp(sample.y(), 0, 1);
+                sample.z() = clamp(sample.z(), 0, 1);
                 intensity += sample;
             }
             muliple_samples(intensity, SPP);
+            // std::cout << intensity << std::endl;
             image.set(w, h, color_intensity(intensity));
             print_progress(h*WIDTH+w, WIDTH*HEIGHT, 40);
         }
     }
+    print_progress(WIDTH*HEIGHT, WIDTH*HEIGHT, 40);
     std::cout << std::endl << "Done." << std::endl;
 
     image.vflip();
@@ -90,7 +96,8 @@ Vector3f ray_color(const Ray &r, const Hittable &world) {
                 // (rec.normal.z() + 1.0) * 255.0 / 2.0
                 // );
         // return color;
-        return rec.normal;
+        return 0.5 * (rec.normal + Vector3f(1,1,1));
+        // return rec.normal;
     }
 
     Vector3f unit_direction = r.direction().normalized();
@@ -103,6 +110,9 @@ Vector3f ray_color(const Ray &r, const Hittable &world) {
 }
 
 Color color_intensity(Vector3f intensity) {
+    intensity.x() = clamp(intensity.x(), 0, 1);
+    intensity.y() = clamp(intensity.y(), 0, 1);
+    intensity.z() = clamp(intensity.z(), 0, 1);
     return Color(
             static_cast<uint8_t>(255 * intensity.x()),
             static_cast<uint8_t>(255 * intensity.y()),
