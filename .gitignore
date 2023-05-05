@@ -1,6 +1,4 @@
-save.ppm
-flipped.ppm
-image.ppm
+*.ppm
 .cache
 build
 *.DS_store
