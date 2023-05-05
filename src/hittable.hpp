@@ -1,14 +1,17 @@
-#ifndef _HITTABLE_H_
-#define _HITTABLE_H_
+#ifndef _HITTABLE_HPP_
+#define _HITTABLE_HPP_
 
 #include "ray.hpp"
 #include "src/Core/Matrix.h"
 #include <memory>
 #include <vector>
 
+class Material;
+
 struct HitRecord {
     Vector3f p;
     Vector3f normal;
+    std::shared_ptr<Material> mat_ptr;
     float t;
     bool front_face;
 
@@ -46,7 +49,7 @@ public:
 };
 
 
-#endif // !_HITTABLE_H_
+#endif // !_HITTABLE_HPP_
 
 
 
