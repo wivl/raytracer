@@ -21,12 +21,13 @@
 
 using namespace ppm;
 
-Vector3f ray_color(const Ray &r, const Hittable &world);
+Vector3f ray_color(const Ray &r, const Hittable &world, int depth);
 Color color_intensity(Vector3f intensity);
 
-const int WIDTH = 1920;
-const int HEIGHT = 1080;
-const int SPP = 50;
+#define WIDTH 960
+#define HEIGHT 540
+#define SPP 50
+#define MAX_RECURSION_DEPTH 50
 
 int main() {
     // image
@@ -48,11 +49,11 @@ int main() {
             Vector3f intensity(0, 0, 0);
             // anti-aliasing
             for (int s = 0; s < SPP; s++) {
-                float u = float(w + random_double()) / (WIDTH - 1);
-                float v = float(h + random_double()) / (HEIGHT - 1);
+                float u = float(w + random_float()) / (WIDTH - 1);
+                float v = float(h + random_float()) / (HEIGHT - 1);
                 // origin, at
                 Ray r = camera.get_ray(u, v);
-                Vector3f sample = ray_color(r, world);
+                Vector3f sample = ray_color(r, world, MAX_RECURSION_DEPTH);
                 sample.x() = clamp(sample.x(), 0, 1);
                 sample.y() = clamp(sample.y(), 0, 1);
                 sample.z() = clamp(sample.z(), 0, 1);
@@ -68,7 +69,7 @@ int main() {
     std::cout << std::endl << "Done." << std::endl;
 
     image.vflip();
-    image.save("../image.ppm");
+    image.save("../another.ppm");
 
     return 0;
 }
@@ -86,25 +87,22 @@ double hit_sphere(const Vector3f &center, float radius, const Ray &r) {
     }
 }
 
-Vector3f ray_color(const Ray &r, const Hittable &world) {
+Vector3f ray_color(const Ray &r, const Hittable &world, int depth) {
     HitRecord rec;
-    if (world.hit(r, 0, infinity, rec)) {
-        // Vector3f N = (r.at(t) - Vector3f(0, 0, -1)).normalized();
-        // Color color(
-                // (rec.normal.x() + 1.0) * 255.0 / 2.0,
-                // (rec.normal.y() + 1.0) * 255.0 / 2.0,
-                // (rec.normal.z() + 1.0) * 255.0 / 2.0
-                // );
-        // return color;
-        return 0.5 * (rec.normal + Vector3f(1,1,1));
-        // return rec.normal;
+    if (depth <= 0) {
+        return Vector3f(0, 0, 0);
+    }
+    if (world.hit(r, 0.001, infinity, rec)) {
+        // target is a random point in a unit radius sphere
+        Vector3f target = rec.p + rec.normal + random_in_hemisphere(rec.normal);
+        // ray is a direction from hit point p to target
+        return 0.5 * ray_color(Ray(rec.p, target - rec.p), world, depth-1);
     }
 
+    // background color
     Vector3f unit_direction = r.direction().normalized();
     auto t = 0.5 * (unit_direction.y() + 1.0);
-    // auto c1 = Color(255, 255, 255);
     auto c1 = Vector3f(1.0, 1.0, 1.0) * (1-t);
-    // auto c2 = Color(127, 178, 255);
     auto c2 = Vector3f(0.5, 0.7, 1.0) * t;
     return c1 + c2;
 }
