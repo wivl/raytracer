@@ -11,7 +11,7 @@ private:
     Vector3f dir;
 
 public:
-    Ray();
+    Ray() {};
     Ray(const Vector3f &origin, const Vector3f &direction): 
         orig(origin),
         dir(direction)

@@ -8,6 +8,10 @@
 #include <memory>
 #include <random>
 
+typedef Eigen::Vector3f Colorf ;
+
+using namespace Eigen;
+
 // Constants
 
 const float infinity = std::numeric_limits<float>::infinity();
@@ -38,15 +42,15 @@ inline float clamp(float x, float min, float max) {
     return x;
 }
 
-inline Eigen::Vector3f v3f_random() {
-    return Eigen::Vector3f(random_float(), random_float(), random_float());
+inline Vector3f v3f_random() {
+    return Vector3f(random_float(), random_float(), random_float());
 }
 
-inline Eigen::Vector3f v3f_random(float min, float max) {
-    return Eigen::Vector3f(random_float(min,max), random_float(min,max), random_float(min,max));
+inline Vector3f v3f_random(float min, float max) {
+    return Vector3f(random_float(min,max), random_float(min,max), random_float(min,max));
 }
 
-inline Eigen::Vector3f random_in_unit_sphere() {
+inline Vector3f random_in_unit_sphere() {
     while (true) {
         auto p = v3f_random(-1, 1);
         if (p.dot(p) >= 1) {
@@ -56,16 +60,26 @@ inline Eigen::Vector3f random_in_unit_sphere() {
     }
 }
 
-inline Eigen::Vector3f random_unit_vector() {
+inline Vector3f random_unit_vector() {
     return random_in_unit_sphere().normalized();
 }
 
-inline Eigen::Vector3f random_in_hemisphere(const Eigen::Vector3f &normal) {
-    Eigen::Vector3f in_unit_sphere = random_in_unit_sphere();
+inline Vector3f random_in_hemisphere(const Vector3f &normal) {
+    Vector3f in_unit_sphere = random_in_unit_sphere();
     if (in_unit_sphere.dot(normal) > 0.0) // In the same hemisphere as the normal
         return in_unit_sphere;
     else
         return -in_unit_sphere;
+}
+
+// return true if the vector is near zero
+inline bool near_zero(const Vector3f v) {
+    const auto s = 1e-8;
+    return (fabs(v[0]) < s) && (fabs(v[1]) < s) && (fabs(v[2]) < s);
+}
+
+inline Vector3f reflect(const Vector3f &v, const Vector3f &n) {
+    return v - 2 * v.dot(n) * n;
 }
 
 // Common Headers
