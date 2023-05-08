@@ -15,7 +15,6 @@ public:
     Camera(float fovy, float aspect_ratio) {
         float theta = degrees_to_radians(fovy);
         float h = tan(theta/2);
-
         float viewport_height = 2.0 * h;
         float viewport_width = aspect_ratio * viewport_height;
 
