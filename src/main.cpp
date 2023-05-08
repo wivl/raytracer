@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <memory>
+#include <string>
 #include <thread>
 #include <chrono>
 #include <cmath>
@@ -30,8 +31,8 @@ Color color_intensity(Vector3f intensity);
 
 #define WIDTH 960
 #define HEIGHT 540
-#define SPP 20
-#define MAX_RECURSION_DEPTH 150
+#define SPP 50
+#define MAX_RECURSION_DEPTH 50
 
 int main() {
     // image
@@ -39,10 +40,11 @@ int main() {
     Image image(WIDTH, HEIGHT);
 
     // world
+    float cos(pi/4);
     HittableList world;
 
+
     auto material_ground = std::make_shared<Lambertian>(Colorf(0.8, 0.8, 0.0));
-    // TODO: air / glass = 1.5 / 1
     auto material_center = std::make_shared<Lambertian>(Colorf(0.1, 0.2, 0.5));
     auto material_left = std::make_shared<Dielectric>(1.5);
     auto material_right = std::make_shared<Metal>(Colorf(0.8, 0.6, 0.2), 0.0);
@@ -50,19 +52,29 @@ int main() {
     world.add(std::make_shared<Sphere>(Vector3f(0, -100.5, -1), 100, material_ground));
     world.add(std::make_shared<Sphere>(Vector3f(0, 0, -1), 0.5, material_center));
     world.add(std::make_shared<Sphere>(Vector3f(-1, 0, -1), 0.5, material_left));
+    world.add(std::make_shared<Sphere>(Vector3f(-1, 0, -1), -0.4, material_left));
     world.add(std::make_shared<Sphere>(Vector3f(1, 0, -1), 0.5, material_right));
     
     // camera
     Camera camera(90, aspect);
 
-    // render
     // openmp
+    #pragma omp parallel
+    {
+        // omp_set_dynamic(0);
+        // omp_set_num_threads(4);
+        int nthreads = omp_get_num_threads();
+        print_log("LOG", "omp", (std::string("thread: ") + std::to_string(nthreads)).c_str());
+    }
     unsigned long long completed = 0;
     unsigned long long total = WIDTH*HEIGHT;
+
+    // render
+#pragma omp parallel for
     for (int h = 0; h < HEIGHT; h++) {
+#pragma omp parallel for
         for (int w = 0; w < WIDTH; w++) {
             Vector3f intensity(0, 0, 0); // anti-aliasing
-#pragma omp parallel for
             for (int s = 0; s < SPP; s++) {
                 float u = float(w + random_float()) / (WIDTH - 1);
                 float v = float(h + random_float()) / (HEIGHT - 1);
@@ -105,6 +117,7 @@ std::string current_date() {
 Colorf ray_color(const Ray &r, const Hittable &world, int depth) {
     HitRecord rec;
     if (depth <= 0) {
+        // std::cout << "dyeing black" << std::endl;
         return Colorf(0, 0, 0);
     }
     if (world.hit(r, 0.001, infinity, rec)) { // rec is over written by hit function

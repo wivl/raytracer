@@ -62,7 +62,7 @@ private:
     // 计算反射率
     static float reflectance(float cosine, float ref_idx) {
         // use schlick's approximation for reflectance.
-        float r0 = (1 - ref_idx) / (1 + ref_idx);
+        float r0 = (1-ref_idx) / (1+ref_idx);
         r0 = r0 * r0;
         return r0 + (1-r0) * pow((1-cosine), 5);
     }
@@ -72,13 +72,15 @@ public:
 
     virtual bool scatter(const Ray &r_in, const HitRecord &rec,
             Colorf &attenuation, Ray &scattered) const override {
+
         attenuation = Colorf(1.0, 1.0, 1.0);
+
         float refraction_ratio = rec.front_face ? (1.0/ir) : ir;
 
         Vector3f unit_direction = r_in.direction().normalized();
 
         float cos_theta = fmin((-unit_direction).dot(rec.normal), 1.0);
-        float sin_theta = sqrt(1.0 - cos_theta*cos_theta);
+        float sin_theta = sqrt(1.0-cos_theta*cos_theta);
 
         bool cannot_refract = refraction_ratio * sin_theta > 1.0;
         Vector3f direction;
