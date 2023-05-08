@@ -1,5 +1,6 @@
 #include "log.hpp"
 
+
 void print_progress(int completed, int total, int width) {
     std::cout << "Progress: [";
     int pos = static_cast<int>(completed * width / total);

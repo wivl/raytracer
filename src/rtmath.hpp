@@ -82,6 +82,15 @@ inline Vector3f reflect(const Vector3f &v, const Vector3f &n) {
     return v - 2 * v.dot(n) * n;
 }
 
+// return refracted ray
+inline Vector3f refract(const Vector3f &uv, const Vector3f &n,
+        float etai_over_etat) {
+    float cos_theta = fmin((-uv).dot(n), 1.0);
+    Vector3f r_out_prep = etai_over_etat * (uv + cos_theta * n);
+    Vector3f r_out_parallel = -sqrt(fabs(1.0 - r_out_prep.dot(r_out_prep))) * n;
+    return r_out_prep + r_out_parallel;
+}
+
 // Common Headers
 
 #include "ray.hpp"

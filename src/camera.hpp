@@ -12,10 +12,13 @@ private:
     Vector3f vertical;
 
 public:
-    Camera() {
-        float aspect_ratio = 16.0 / 9.0;
-        float viewport_height = 2.0;
+    Camera(float fovy, float aspect_ratio) {
+        float theta = degrees_to_radians(fovy);
+        float h = tan(theta/2);
+
+        float viewport_height = 2.0 * h;
         float viewport_width = aspect_ratio * viewport_height;
+
         float focal_length = 1.0;
 
         origin = Vector3f(0, 0, 0);
