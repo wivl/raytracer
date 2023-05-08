@@ -19,8 +19,8 @@ target_include_directories(tinyobjloader PUBLIC dependencies/tinyobjloader)
 add_library(eigen INTERFACE)
 target_include_directories(eigen INTERFACE ${EIGEN_INCLUDE_DIR})
 
-add_library(openmp INTERFACE)
-target_include_directories(openmp INTERFACE "dependencies/OpenMP/include")
+add_library(openmp STATIC dependencies/OpenMP/stubs/stubs.c)
+target_include_directories(openmp PUBLIC "dependencies/OpenMP/include")
 
 
 file(GLOB SRC_FILES 
