@@ -1,6 +1,10 @@
 #include "log.hpp"
 
 
+void print_log(const char *type, const char *from, const char *content) {
+    std::cout << "[" << type << "]" << from << ": " << content << std::endl;
+}
+
 void print_progress(int completed, int total, int width) {
     std::cout << "Progress: [";
     int pos = static_cast<int>(completed * width / total);
