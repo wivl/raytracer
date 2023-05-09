@@ -1,0 +1,6 @@
+[submodule "dependencies/ppmpp"]
+	path = dependencies/ppmpp
+	url = https://github.com/wivl/ppmpp.git
+[submodule "dependencies/OpenMP"]
+	path = dependencies/OpenMP
+	url = https://github.com/OpenMP/sources.git
