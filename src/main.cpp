@@ -32,8 +32,8 @@ HittableList random_scene();
 
 #define WIDTH 960
 #define HEIGHT 540
-#define SPP 100
-#define MAX_RECURSION_DEPTH 100
+#define SPP 50
+#define MAX_RECURSION_DEPTH 50
 
 int main() {
     // image
