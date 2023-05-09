@@ -91,6 +91,16 @@ inline Vector3f refract(const Vector3f &uv, const Vector3f &n,
     return r_out_prep + r_out_parallel;
 }
 
+inline Vector3f random_in_unit_disk() {
+    while (true) {
+        auto p = Vector3f(random_float(-1, 1), random_float(-1, 1), 0);
+        if (p.dot(p) >= 1) {
+            continue;
+        }
+        return p;
+    }
+}
+
 // Common Headers
 
 #include "ray.hpp"
