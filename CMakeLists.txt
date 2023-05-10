@@ -19,8 +19,19 @@ target_include_directories(tinyobjloader PUBLIC dependencies/tinyobjloader)
 add_library(eigen INTERFACE)
 target_include_directories(eigen INTERFACE ${EIGEN_INCLUDE_DIR})
 
-add_library(openmp STATIC dependencies/OpenMP/stubs/stubs.c)
-target_include_directories(openmp PUBLIC "dependencies/OpenMP/include")
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+	# Windows
+
+	find_package(OpenMP REQUIRED)
+
+	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+
+else()
+	# macOS
+	add_library(OpenMP STATIC dependencies/OpenMP/stubs/stubs.c)
+	target_include_directories(OpenMP PUBLIC "dependencies/OpenMP/include")
+endif()
 
 
 file(GLOB SRC_FILES 
@@ -32,7 +43,19 @@ file(GLOB SRC_FILES
 
 add_executable(${CMAKE_PROJECT_NAME} ${SRC_FILES})
 
-target_link_libraries(${CMAKE_PROJECT_NAME} ppmpp tinyobjloader eigen openmp)
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+	# Windows
+
+	target_link_libraries(${CMAKE_PROJECT_NAME} ppmpp tinyobjloader eigen ${OpenMP_CXX_FLAGS})
+
+else()
+	# macOS
+	target_link_libraries(${CMAKE_PROJECT_NAME} ppmpp tinyobjloader eigen OpenMP)
+endif()
+
+
+
+
 
 # if you are using neovim with coc-clangd, than you should generate a file using 
 # ```
