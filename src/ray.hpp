@@ -9,16 +9,19 @@ class Ray {
 private:
     Vector3f orig;
     Vector3f dir;
+    float tm;
 
 public:
     Ray() {};
-    Ray(const Vector3f &origin, const Vector3f &direction): 
+    Ray(const Vector3f &origin, const Vector3f &direction, float time = 0.0): 
         orig(origin),
-        dir(direction)
+        dir(direction),
+        tm(time)
     {}
 
     Vector3f origin() const { return orig; }
     Vector3f direction() const { return dir; }
+    float time() const { return tm; }
 
     Vector3f at(float t) const {
         return orig + t * dir;

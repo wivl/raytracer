@@ -52,7 +52,7 @@ int main() {
     auto dist_to_focus = 10;
     float aperture = 0.1;
 
-    Camera camera(eye, lookat, up, 20, aspect, aperture, dist_to_focus);
+    Camera camera(eye, lookat, up, 20, aspect, aperture, dist_to_focus, 0.0, 1.0);
 
     // openmp
     #pragma omp parallel
@@ -166,7 +166,8 @@ HittableList random_scene() {
                             random_float(0, 1)
                             );
                     sphere_material = std::make_shared<Lambertian>(albedo);
-                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material));
+                    auto center2 = center + Vector3f(0, random_float(0, 0.5), 0);
+                    world.add(std::make_shared<SphereMoving>(center, center2, 0.0, 1.0, 0.2, sphere_material));
                 } else if (choose_mat < 0.95) {
                     // metal
                     auto albedo = Colorf(

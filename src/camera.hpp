@@ -12,11 +12,20 @@ private:
     Vector3f vertical;
     Vector3f u, v, w;
     float lens_radius;
+    float time0, time1;
 
 public:
-    Camera(Vector3f lookfrom, Vector3f lookat, Vector3f vup,
-            float fovy, float aspect_ratio, float aperture,
-            float focus_dist) {
+    Camera(
+            Vector3f lookfrom,
+            Vector3f lookat,
+            Vector3f vup,
+            float fovy,
+            float aspect_ratio, 
+            float aperture,
+            float focus_dist,
+            float _time0,
+            float _time1
+            ) {
         float theta = degrees_to_radians(fovy);
         float h = tan(theta/2);
         float viewport_height = 2.0 * h;
@@ -33,6 +42,8 @@ public:
         lower_left_corner = origin - horizontal/2 - vertical/2 - focus_dist * w;
 
         lens_radius = aperture / 2;
+        time0 = _time0;
+        time1 = _time1;
         // the image plane
         //               vertical
         //                  ^
@@ -48,7 +59,9 @@ public:
         Vector3f offset = u * rd.x() + v * rd.y();
 
         return Ray(origin + offset,
-                lower_left_corner + s*horizontal + t*vertical - origin - offset);
+                lower_left_corner + s*horizontal + t*vertical - origin - offset,
+                random_float(time0, time1)
+                );
     }
 };
 

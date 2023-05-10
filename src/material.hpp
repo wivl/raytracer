@@ -30,7 +30,7 @@ public:
         if (near_zero(scatter_direction)) {
             scatter_direction = rec.normal;
         }
-        scattered = Ray(rec.p, scatter_direction);
+        scattered = Ray(rec.p, scatter_direction, r_in.time());
         attenuation = albedo;
         return true;
     }
@@ -48,7 +48,7 @@ public:
     virtual bool scatter(const Ray &r_in, const HitRecord &rec,
             Colorf &attenuation, Ray &scattered) const override {
         Vector3f reflected = reflect(r_in.direction().normalized(), rec.normal);
-        scattered = Ray(rec.p, reflected+fuzz*random_in_unit_sphere());
+        scattered = Ray(rec.p, reflected+fuzz*random_in_unit_sphere(), r_in.time());
         attenuation = albedo;
         return scattered.direction().dot(rec.normal) > 0;
     }
@@ -91,7 +91,7 @@ public:
             direction = refract(unit_direction, rec.normal, refraction_ratio);
         }
 
-        scattered = Ray(rec.p, direction);
+        scattered = Ray(rec.p, direction, r_in.time());
         return true;
     }
 };
