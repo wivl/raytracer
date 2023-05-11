@@ -1,4 +1,5 @@
 #include "sphere.hpp"
+#include "bvh.hpp"
 #include "src/Core/Matrix.h"
 
 
@@ -80,6 +81,27 @@ bool SphereMoving::hit(const Ray &r, float t_min, float t_max, HitRecord &rec) c
     return true;
 }
 
+
+bool Sphere::bounding_box(float time0, float time1, AABB &output_box) const {
+    output_box = AABB(
+            center - Vector3f(radius, radius, radius),
+            center + Vector3f(radius, radius, radius)
+            );
+    return true;
+}
+
+bool SphereMoving::bounding_box(float _time0, float _time1, AABB &output_box) const {
+    AABB box0 = AABB(
+            center(_time0) - Vector3f(radius, radius, radius),
+            center(_time0) + Vector3f(radius, radius, radius)
+            );
+    AABB box1 = AABB(
+            center(_time1) - Vector3f(radius, radius, radius),
+            center(_time1) + Vector3f(radius, radius, radius)
+            );
+    output_box = surrounding_box(box0, box1);
+    return true;
+}
 
 Vector3f SphereMoving::center(float time) const {
     return center0 + ((time - time0) / (time1 - time0)) * (center1 - center0);

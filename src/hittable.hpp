@@ -7,6 +7,7 @@
 #include <vector>
 
 class Material;
+class AABB;
 
 struct HitRecord {
     Vector3f p;
@@ -25,11 +26,12 @@ struct HitRecord {
 class Hittable {
 public:
     virtual bool hit(const Ray &r, float t_min, float t_max, HitRecord &rec) const = 0;
+    virtual bool bounding_box(float time0, float time1, AABB &output_box) const = 0;
 };
 
 
 class HittableList: public Hittable {
-private:
+public:
     std::vector<std::shared_ptr<Hittable>> objects;
 
 public:
@@ -46,6 +48,7 @@ public:
     };
 
     virtual bool hit(const Ray &r, float t_min, float t_max, HitRecord &rec) const override;
+    virtual bool bounding_box(float time0, float time1, AABB &output_box) const override;
 };
 
 
