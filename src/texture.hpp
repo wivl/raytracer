@@ -6,6 +6,7 @@
 
 #include "rtmath.hpp"
 #include "src/Core/Matrix.h"
+#include "perlin.hpp"
 
 class Texture {
     public:
@@ -45,6 +46,20 @@ class Checker: public Texture {
             } else {
                 return even->value(u, v, p);
             }
+        }
+};
+
+class Noise: public Texture {
+    private:
+        Perlin noise;
+        float scale;
+
+    public:
+        Noise() {}
+        Noise(float sc): scale(sc) {}
+
+        virtual Colorf value(float u, float v, const Eigen::Vector3f &p) const override {
+            return Colorf(1,1,1) * 0.5 * (1 + sin(scale*p.z() + 10*noise.turb(p)));
         }
 };
 

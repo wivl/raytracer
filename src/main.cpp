@@ -30,6 +30,7 @@ std::string current_date();
 Colorf ray_color(const Ray &r, const Hittable &world, int depth);
 Color color_intensity(Vector3f intensity);
 HittableList random_scene();
+HittableList two_perlin_spheres();
 
 #define WIDTH 960
 #define HEIGHT 540
@@ -43,10 +44,8 @@ int main() {
 
     // world
     // HittableList world = random_scene();
-    HittableList world;
+    HittableList world = two_perlin_spheres();
 
-    auto checker = std::make_shared<Checker>(Colorf(0.2, 0.3, 0.1), Colorf(0.9, 0.9, 0.9));
-    world.add(std::make_shared<Sphere>(Vector3f(0, -1000, 0), 1000, std::make_shared<Lambertian>(checker)));
 
     
     // camera
@@ -205,4 +204,14 @@ HittableList random_scene() {
     world.add(make_shared<Sphere>(Vector3f(4, 1, 0), 1.0, material3));
 
     return world;
+}
+
+HittableList two_perlin_spheres() {
+    HittableList objects;
+
+    auto pertext = std::make_shared<Noise>(4);
+    objects.add(std::make_shared<Sphere>(Vector3f(0,-1000,0), 1000, std::make_shared<Lambertian>(pertext)));
+    objects.add(std::make_shared<Sphere>(Vector3f(0, 2, 0), 2, std::make_shared<Lambertian>(pertext)));
+
+    return objects;
 }
