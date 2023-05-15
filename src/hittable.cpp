@@ -17,7 +17,9 @@ bool HittableList::hit(const Ray &r, float t_min, float t_max, HitRecord &rec) c
 }
 
 
+// get the bb of the list
 bool HittableList::bounding_box(float time0, float time1, AABB &output_box) const {
+    // if empty no bb
     if (objects.empty()) {
         return false;
     }
@@ -25,6 +27,7 @@ bool HittableList::bounding_box(float time0, float time1, AABB &output_box) cons
     AABB temp_box;
     bool first_box = true;
 
+    // TODO: analyse
     for (const auto &object : objects) {
         if (!object->bounding_box(time0, time1, temp_box)) {
             return false;

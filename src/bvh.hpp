@@ -11,6 +11,7 @@
 
 using namespace Eigen;
 
+// axis-aligned bounding box
 class AABB {
     private:
         Vector3f minimum;
@@ -19,6 +20,7 @@ class AABB {
         AABB() {}
         AABB(const Vector3f &a, const Vector3f &b): minimum(a), maximum(b) {}
 
+        // getters n setters
         Vector3f min() const { return minimum; };
         Vector3f max() const { return maximum; };
 
@@ -53,13 +55,16 @@ inline AABB surrounding_box(AABB box0, AABB box1) {
     return AABB(small,big);
 }
 
+// a bvh bi-tree node
 class BVHNode: public Hittable {
     private:
         std::shared_ptr<Hittable> left;
         std::shared_ptr<Hittable> right;
+        // self
         AABB box;
     public:
         BVHNode () {}
+        // TODO: constructor
         BVHNode (
                 const std::vector<std::shared_ptr<Hittable>> src_objects,
                 size_t start, size_t end, float time0, float time1
