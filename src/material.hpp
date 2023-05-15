@@ -6,6 +6,8 @@
 #include "rtmath.hpp"
 #include "src/Core/Matrix.h"
 #include "hittable.hpp"
+#include "texture.hpp"
+#include <memory>
 
 
 // virtual class
@@ -18,10 +20,11 @@ public:
 // aka diffuse reflection material
 class Lambertian: public Material {
 private:
-    Colorf albedo;
+    std::shared_ptr<Texture> albedo;
 
 public:
-    Lambertian(const Vector3f &a): albedo(a) {}
+    Lambertian(const Colorf &a): albedo(std::make_shared<Solid>(a)) {}
+    Lambertian(std::shared_ptr<Texture> a): albedo(a) {}
 
     virtual bool scatter(const Ray &r_in, const HitRecord &rec,
             Colorf &attenuation, Ray &scattered) const override {
@@ -31,7 +34,7 @@ public:
             scatter_direction = rec.normal;
         }
         scattered = Ray(rec.p, scatter_direction, r_in.time());
-        attenuation = albedo;
+        attenuation = albedo->value(rec.u, rec.v, rec.p);
         return true;
     }
 };

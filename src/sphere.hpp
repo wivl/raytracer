@@ -12,6 +12,19 @@ class Sphere : public Hittable {
         float radius;
         std::shared_ptr<Material> mat_ptr;
 
+
+
+        // 假设有一个单位球体位于原点(0, 0, 0), 用来计算球体上一个点的 u, v 值
+        // p: a given point on the sphere of radius=1, centered at the origin.
+        // u: returned value [0,1] of angle around the Y axis from X=-1.
+        // v: returned value [0,1] of angle from Y=-1 to Y=+1.
+        static void get_sphere_uv(const Vector3f &p, float &u, float &v) {
+            float theta = acos(-p.y());
+            float phi = atan2(-p.z(), p.x()) + pi;
+            u = phi / (2*pi);
+            v = theta / pi;
+        }
+
     public:
         Sphere() {}
         Sphere(Vector3f cen, float r, std::shared_ptr<Material> m):

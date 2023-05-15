@@ -36,6 +36,8 @@ bool Sphere::hit(const Ray &r, float t_min, float t_max, HitRecord &rec) const {
     rec.p = r.at(rec.t); // point at the sphere surface
     Vector3f outward_normal = (rec.p - center) / radius;
     rec.set_face_normal(r, outward_normal);
+    // 假设有一个单位球体位于原点(0, 0, 0), 用来计算球体上一个点的 u, v 值
+    get_sphere_uv(outward_normal, rec.u, rec.v);
     rec.mat_ptr = mat_ptr;
 
     // valid hit

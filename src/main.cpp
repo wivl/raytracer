@@ -22,6 +22,7 @@
 #include "ray.hpp"
 #include "antialiasing.hpp"
 #include "material.hpp"
+#include "texture.hpp"
 
 using namespace ppm;
 
@@ -41,8 +42,11 @@ int main() {
     Image image(WIDTH, HEIGHT);
 
     // world
-    HittableList world = random_scene();
+    // HittableList world = random_scene();
+    HittableList world;
 
+    auto checker = std::make_shared<Checker>(Colorf(0.2, 0.3, 0.1), Colorf(0.9, 0.9, 0.9));
+    world.add(std::make_shared<Sphere>(Vector3f(0, -1000, 0), 1000, std::make_shared<Lambertian>(checker)));
 
     
     // camera
@@ -148,6 +152,10 @@ Color color_intensity(Vector3f intensity) {
 
 HittableList random_scene() {
     HittableList world;
+
+    auto checker = std::make_shared<Checker>(Colorf(0.2, 0.3, 0.1), Colorf(0.9, 0.9, 0.9));
+    world.add(std::make_shared<Sphere>(Vector3f(0, -1000, 0), 1000, std::make_shared<Lambertian>(checker)));
+
     auto ground_material = std::make_shared<Lambertian>(Colorf(0.5, 0.5, 0.5));
     world.add(std::make_shared<Sphere>(Vector3f(0, -1000, 0), 1000, ground_material));
 
