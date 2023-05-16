@@ -9,7 +9,6 @@ set(CMAKE_CXX_STANDARD 20)
 include_directories("${PROJECT_SOURCE_DIR}/dependencies")
 set(EIGEN_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/dependencies/Eigen") 
 
-
 add_library(ppmpp STATIC dependencies/ppmpp/ppmpp.cpp)
 target_include_directories(ppmpp PUBLIC dependencies/ppmpp)
 
@@ -18,6 +17,9 @@ target_include_directories(tinyobjloader PUBLIC dependencies/tinyobjloader)
 
 add_library(eigen INTERFACE)
 target_include_directories(eigen INTERFACE ${EIGEN_INCLUDE_DIR})
+
+add_library(stb STATIC dependencies/stb/stb_image.cpp)
+target_include_directories(stb PUBLIC dependencies/stb)
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	# Windows
@@ -45,12 +47,11 @@ add_executable(${CMAKE_PROJECT_NAME} ${SRC_FILES})
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	# Windows
-
-	target_link_libraries(${CMAKE_PROJECT_NAME} ppmpp tinyobjloader eigen ${OpenMP_CXX_FLAGS})
+	target_link_libraries(${CMAKE_PROJECT_NAME} ppmpp tinyobjloader eigen stb ${OpenMP_CXX_FLAGS})
 
 else()
 	# macOS
-	target_link_libraries(${CMAKE_PROJECT_NAME} ppmpp tinyobjloader eigen OpenMP)
+	target_link_libraries(${CMAKE_PROJECT_NAME} ppmpp tinyobjloader eigen stb OpenMP)
 endif()
 
 
