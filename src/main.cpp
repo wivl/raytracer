@@ -34,11 +34,12 @@ HittableList random_scene();
 HittableList two_perlin_spheres();
 HittableList earth();
 HittableList simple_light();
+HittableList cornell_box();
 
 #define WIDTH 960
 #define HEIGHT 540
-#define SPP 50
-#define MAX_RECURSION_DEPTH 50
+#define SPP 200
+#define MAX_RECURSION_DEPTH 100
 
 int main() {
     // image
@@ -47,18 +48,18 @@ int main() {
 
     // world
     // HittableList world = random_scene();
-    HittableList world = simple_light();
+    HittableList world = cornell_box();
 
 
     
     // camera
-    Vector3f eye(26, 3, 6);
-    Vector3f lookat(0, 2, 0);
+    Vector3f eye(278, 278, -800);
+    Vector3f lookat(278, 278, -800);
     Vector3f up(0, 1, 0);
     auto dist_to_focus = 10;
     float aperture = 0.1;
 
-    Camera camera(eye, lookat, up, 20, aspect, aperture, dist_to_focus, 0.0, 1.0);
+    Camera camera(eye, lookat, up, 40, aspect, aperture, dist_to_focus, 0.0, 1.0);
 
     // openmp
     #pragma omp parallel
