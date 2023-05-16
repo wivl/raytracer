@@ -15,6 +15,9 @@ class Material {
 public:
     virtual bool scatter(const Ray &r_in, const HitRecord &rec,
             Colorf &attenuation, Ray &scattered) const = 0;
+    virtual Colorf emitted(double u, double v, const Vector3f p) const {
+        return Colorf(0,0,0);
+    }
 };
 
 // aka diffuse reflection material
@@ -97,6 +100,24 @@ public:
         scattered = Ray(rec.p, direction, r_in.time());
         return true;
     }
+};
+
+class DiffuseLight: public Material {
+    private:
+        std::shared_ptr<Texture> emit;
+    public:
+        DiffuseLight(std::shared_ptr<Texture> a): emit(a) {}
+        DiffuseLight(Colorf c): emit(std::make_shared<Solid>(c)) {}
+
+        virtual bool scatter(const Ray &r_in, const HitRecord &rec,
+                Colorf &attenuation, Ray &scattered) const override {
+            return false;
+        }
+        virtual Colorf emitted(double u, double v, const Vector3f p) const override {
+            return emit->value(u, v, p);
+        }
+
+        
 };
 
 #endif // !_MATERIAL_HPP_

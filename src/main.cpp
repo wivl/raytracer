@@ -23,14 +23,17 @@
 #include "antialiasing.hpp"
 #include "material.hpp"
 #include "texture.hpp"
+#include "rect.hpp"
 
 using namespace ppm;
 
 std::string current_date();
-Colorf ray_color(const Ray &r, const Hittable &world, int depth);
+Colorf ray_color(const Ray &r, const Colorf &background, const Hittable &world, int depth);
 Color color_intensity(Vector3f intensity);
 HittableList random_scene();
 HittableList two_perlin_spheres();
+HittableList earth();
+HittableList simple_light();
 
 #define WIDTH 960
 #define HEIGHT 540
@@ -44,13 +47,13 @@ int main() {
 
     // world
     // HittableList world = random_scene();
-    HittableList world = two_perlin_spheres();
+    HittableList world = simple_light();
 
 
     
     // camera
-    Vector3f eye(13, 2, 3);
-    Vector3f lookat(0, 0, 0);
+    Vector3f eye(26, 3, 6);
+    Vector3f lookat(0, 2, 0);
     Vector3f up(0, 1, 0);
     auto dist_to_focus = 10;
     float aperture = 0.1;
@@ -79,7 +82,7 @@ int main() {
                 float v = float(h + random_float()) / (HEIGHT - 1);
                 // origin, at
                 Ray r = camera.get_ray(u, v);
-                Colorf sample = ray_color(r, world, MAX_RECURSION_DEPTH);
+                Colorf sample = ray_color(r, Vector3f(0, 0, 0), world, MAX_RECURSION_DEPTH);
                 sample.x() = clamp(sample.x(), 0, 1);
                 sample.y() = clamp(sample.y(), 0, 1);
                 sample.z() = clamp(sample.z(), 0, 1);
@@ -113,29 +116,30 @@ std::string current_date() {
   return ss.str();
 }
 
-Colorf ray_color(const Ray &r, const Hittable &world, int depth) {
+Colorf ray_color(const Ray &r, const Colorf &background, const Hittable &world, int depth) {
     HitRecord rec;
+    
+    // hit MAX_RECURSION_DEPTH
     if (depth <= 0) {
-        // std::cout << "dyeing black" << std::endl;
-        return Colorf(0, 0, 0);
-    }
-    if (world.hit(r, 0.001, infinity, rec)) { // rec is over written by hit function
-        // The ray after reflection
-        Ray scattered;
-        // 颜色衰减程度
-        Colorf attenuation;
-        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered)) { // read only rec
-            return attenuation.cwiseProduct(ray_color(scattered, world, depth-1));
-        }
         return Colorf(0, 0, 0);
     }
 
-    // background color
-    Vector3f unit_direction = r.direction().normalized();
-    auto t = 0.5 * (unit_direction.y() + 1.0);
-    auto c1 = Colorf(1.0, 1.0, 1.0) * (1-t);
-    auto c2 = Colorf(0.5, 0.7, 1.0) * t;
-    return c1 + c2;
+    // no hit
+    if (!world.hit(r, 0.001, infinity, rec)) {
+        return background;
+    }
+
+    Ray scattered;
+    Colorf attenuation;
+    Colorf emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
+    // no scatter, means it emits light
+    if (!rec.mat_ptr->scatter(r, rec, attenuation, scattered)) { // read only rec
+        return emitted;
+    }
+
+    // scattered
+    return attenuation.cwiseProduct(ray_color(scattered, background, world, depth-1));
+
 }
 
 Color color_intensity(Vector3f intensity) {
@@ -212,6 +216,45 @@ HittableList two_perlin_spheres() {
     auto pertext = std::make_shared<Noise>(4);
     objects.add(std::make_shared<Sphere>(Vector3f(0,-1000,0), 1000, std::make_shared<Lambertian>(pertext)));
     objects.add(std::make_shared<Sphere>(Vector3f(0, 2, 0), 2, std::make_shared<Lambertian>(pertext)));
+
+    return objects;
+}
+
+HittableList earth() {
+    auto earth_texture = std::make_shared<ImageTexture>("earthmap.jpg");
+    auto earth_surface = std::make_shared<Lambertian>(earth_texture);
+    auto globe = std::make_shared<Sphere>(Vector3f(0,0,0), 2, earth_surface);
+
+    return HittableList(globe);
+}
+
+HittableList simple_light() {
+    HittableList objects;
+
+    auto pertext = std::make_shared<Noise>(4);
+    objects.add(std::make_shared<Sphere>(Vector3f(0,-1000,0), 1000, make_shared<Lambertian>(pertext)));
+    objects.add(std::make_shared<Sphere>(Vector3f(0,2,0), 2, make_shared<Lambertian>(pertext)));
+
+    auto difflight = std::make_shared<DiffuseLight>(Colorf(4,4,4));
+    objects.add(std::make_shared<XYRect>(3, 5, 1, 3, -2, difflight));
+
+    return objects;
+}
+
+HittableList cornell_box() {
+    HittableList objects;
+
+    auto red   = std::make_shared<Lambertian>(Colorf(.65, .05, .05));
+    auto white = std::make_shared<Lambertian>(Colorf(.73, .73, .73));
+    auto green = std::make_shared<Lambertian>(Colorf(.12, .45, .15));
+    auto light = std::make_shared<DiffuseLight>(Colorf(15, 15, 15));
+
+    objects.add(std::make_shared<YZRect>(0, 555, 0, 555, 555, green));
+    objects.add(std::make_shared<YZRect>(0, 555, 0, 555, 0, red));
+    objects.add(std::make_shared<XZRect>(213, 343, 227, 332, 554, light));
+    objects.add(std::make_shared<XZRect>(0, 555, 0, 555, 0, white));
+    objects.add(std::make_shared<XZRect>(0, 555, 0, 555, 555, white));
+    objects.add(std::make_shared<XYRect>(0, 555, 0, 555, 555, white));
 
     return objects;
 }
