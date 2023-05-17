@@ -24,6 +24,7 @@
 #include "material.hpp"
 #include "texture.hpp"
 #include "rect.hpp"
+#include "box.hpp"
 
 using namespace ppm;
 
@@ -36,10 +37,10 @@ HittableList earth();
 HittableList simple_light();
 HittableList cornell_box();
 
-#define WIDTH 960
-#define HEIGHT 540
+#define WIDTH 600
+#define HEIGHT 600
 #define SPP 200
-#define MAX_RECURSION_DEPTH 100
+#define MAX_RECURSION_DEPTH 50
 
 int main() {
     // image
@@ -54,7 +55,7 @@ int main() {
     
     // camera
     Vector3f eye(278, 278, -800);
-    Vector3f lookat(278, 278, -800);
+    Vector3f lookat(278, 278, 0);
     Vector3f up(0, 1, 0);
     auto dist_to_focus = 10;
     float aperture = 0.1;
@@ -139,7 +140,7 @@ Colorf ray_color(const Ray &r, const Colorf &background, const Hittable &world, 
     }
 
     // scattered
-    return attenuation.cwiseProduct(ray_color(scattered, background, world, depth-1));
+    return emitted + attenuation.cwiseProduct(ray_color(scattered, background, world, depth-1));
 
 }
 
@@ -256,6 +257,9 @@ HittableList cornell_box() {
     objects.add(std::make_shared<XZRect>(0, 555, 0, 555, 0, white));
     objects.add(std::make_shared<XZRect>(0, 555, 0, 555, 555, white));
     objects.add(std::make_shared<XYRect>(0, 555, 0, 555, 555, white));
+
+    objects.add(std::make_shared<Box>(Vector3f(130, 0, 65), Vector3f(295, 165, 230), white));
+    objects.add(std::make_shared<Box>(Vector3f(265, 0, 295), Vector3f(430, 330, 460), white));
 
     return objects;
 }
