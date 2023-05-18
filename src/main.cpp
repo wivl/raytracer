@@ -25,6 +25,7 @@
 #include "rect.hpp"
 #include "box.hpp"
 #include "constant_medium.hpp"
+#include "bvh.hpp"
 
 using namespace ppm;
 
@@ -37,10 +38,11 @@ HittableList earth();
 HittableList simple_light();
 HittableList cornell_box();
 HittableList cornell_smoke();
+HittableList final_scene();
 
-#define WIDTH 600
-#define HEIGHT 600
-#define SPP 50
+#define WIDTH 800
+#define HEIGHT 800
+#define SPP 1000
 #define MAX_RECURSION_DEPTH 50
 
 int main() {
@@ -50,12 +52,12 @@ int main() {
 
     // world
     // HittableList world = random_scene();
-    HittableList world = cornell_smoke();
+    HittableList world = final_scene();
 
 
     
     // camera
-    Vector3f eye(278, 278, -800);
+    Vector3f eye(478, 278, -600);
     Vector3f lookat(278, 278, 0);
     Vector3f up(0, 1, 0);
     auto dist_to_focus = 10;
@@ -85,7 +87,7 @@ int main() {
                 float v = float(h + random_float()) / (HEIGHT - 1);
                 // origin, at
                 Ray r = camera.get_ray(u, v);
-                // FIX: color not correct
+                // FIX: Colorf not correct
                 Colorf sample = ray_color(r, Vector3f(0, 0, 0), world, MAX_RECURSION_DEPTH);
                 intensity += sample;
             }
@@ -299,6 +301,70 @@ HittableList cornell_smoke() {
 
     objects.add(make_shared<ConstantMedium>(box1, 0.01, Colorf(0,0,0)));
     objects.add(make_shared<ConstantMedium>(box2, 0.01, Colorf(1,1,1)));
+
+    return objects;
+}
+
+HittableList final_scene() {
+    HittableList boxes1;
+    auto ground = std::make_shared<Lambertian>(Colorf(0.48, 0.83, 0.53));
+
+    const int boxes_per_side = 20;
+    for (int i = 0; i < boxes_per_side; i++) {
+        for (int j = 0; j < boxes_per_side; j++) {
+            auto w = 100.0;
+            auto x0 = -1000.0 + i*w;
+            auto z0 = -1000.0 + j*w;
+            auto y0 = 0.0;
+            auto x1 = x0 + w;
+            auto y1 = random_float(1,101);
+            auto z1 = z0 + w;
+
+            boxes1.add(std::make_shared<Box>(Vector3f(x0,y0,z0), Vector3f(x1,y1,z1), ground));
+        }
+    }
+
+    HittableList objects;
+
+    objects.add(std::make_shared<BVHNode>(boxes1, 0, 1));
+
+    auto light = std::make_shared<DiffuseLight>(Colorf(7, 7, 7));
+    objects.add(make_shared<XZRect>(123, 423, 147, 412, 554, light));
+
+    auto center1 = Vector3f(400, 400, 200);
+    auto center2 = center1 + Vector3f(30,0,0);
+    auto moving_sphere_material = std::make_shared<Lambertian>(Colorf(0.7, 0.3, 0.1));
+    objects.add(std::make_shared<SphereMoving>(center1, center2, 0, 1, 50, moving_sphere_material));
+
+    objects.add(std::make_shared<Sphere>(Vector3f(260, 150, 45), 50, std::make_shared<Dielectric>(1.5)));
+    objects.add(std::make_shared<Sphere>(
+        Vector3f(0, 150, 145), 50, std::make_shared<Metal>(Colorf(0.8, 0.8, 0.9), 1.0)
+    ));
+
+    auto boundary = std::make_shared<Sphere>(Vector3f(360,150,145), 70, std::make_shared<Dielectric>(1.5));
+    objects.add(boundary);
+    objects.add(std::make_shared<ConstantMedium>(boundary, 0.2, Colorf(0.2, 0.4, 0.9)));
+    boundary = std::make_shared<Sphere>(Vector3f(0, 0, 0), 5000, std::make_shared<Dielectric>(1.5));
+    objects.add(std::make_shared<ConstantMedium>(boundary, .0001, Colorf(1,1,1)));
+
+    auto emat = std::make_shared<Lambertian>(std::make_shared<ImageTexture>("earthmap.jpg"));
+    objects.add(std::make_shared<Sphere>(Vector3f(400,200,400), 100, emat));
+    auto pertext = std::make_shared<Noise>(0.1);
+    objects.add(std::make_shared<Sphere>(Vector3f(220,280,300), 80, std::make_shared<Lambertian>(pertext)));
+
+    HittableList boxes2;
+    auto white = std::make_shared<Lambertian>(Colorf(.73, .73, .73));
+    int ns = 1000;
+    for (int j = 0; j < ns; j++) {
+        boxes2.add(std::make_shared<Sphere>(v3f_random(0,165), 10, white));
+    }
+
+    objects.add(std::make_shared<Translate>(
+        std::make_shared<RotateY>(
+            std::make_shared<BVHNode>(boxes2, 0.0, 1.0), 15),
+            Vector3f(-100,270,395)
+        )
+    );
 
     return objects;
 }
