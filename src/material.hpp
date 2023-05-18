@@ -120,4 +120,21 @@ class DiffuseLight: public Material {
         
 };
 
+class Isotropic : public Material {
+    public:
+        Isotropic(Colorf c) : albedo(std::make_shared<Solid>(c)) {}
+        Isotropic(std::shared_ptr<Texture> a) : albedo(a) {}
+
+        virtual bool scatter(
+            const Ray &r_in, const HitRecord &rec, Colorf &attenuation, Ray &scattered
+        ) const override {
+            scattered = Ray(rec.p, random_in_unit_sphere(), r_in.time());
+            attenuation = albedo->value(rec.u, rec.v, rec.p);
+            return true;
+        }
+
+    public:
+        std::shared_ptr<Texture> albedo;
+};
+
 #endif // !_MATERIAL_HPP_

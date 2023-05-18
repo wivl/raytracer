@@ -1,6 +1,7 @@
 #ifndef _HITTABLE_HPP_
 #define _HITTABLE_HPP_
 
+
 #include "ray.hpp"
 #include "src/Core/Matrix.h"
 #include <memory>
@@ -55,7 +56,5 @@ public:
 };
 
 
+
 #endif // !_HITTABLE_HPP_
-
-
-

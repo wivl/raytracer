@@ -37,3 +37,4 @@ bool HittableList::bounding_box(float time0, float time1, AABB &output_box) cons
     }
     return true;
 }
+

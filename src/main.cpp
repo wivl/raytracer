@@ -12,7 +12,6 @@
 #include <tiny_obj_loader.h>
 #include <Eigen/Dense>
 #include "src/Core/Matrix.h"
-#include <omp.h>
 
 #include "camera.hpp"
 #include "rtmath.hpp"
@@ -25,6 +24,7 @@
 #include "texture.hpp"
 #include "rect.hpp"
 #include "box.hpp"
+#include "constant_medium.hpp"
 
 using namespace ppm;
 
@@ -36,10 +36,11 @@ HittableList two_perlin_spheres();
 HittableList earth();
 HittableList simple_light();
 HittableList cornell_box();
+HittableList cornell_smoke();
 
 #define WIDTH 600
 #define HEIGHT 600
-#define SPP 200
+#define SPP 100
 #define MAX_RECURSION_DEPTH 50
 
 int main() {
@@ -49,7 +50,7 @@ int main() {
 
     // world
     // HittableList world = random_scene();
-    HittableList world = cornell_box();
+    HittableList world = cornell_smoke();
 
 
     
@@ -249,7 +250,7 @@ HittableList cornell_box() {
     auto red   = std::make_shared<Lambertian>(Colorf(.65, .05, .05));
     auto white = std::make_shared<Lambertian>(Colorf(.73, .73, .73));
     auto green = std::make_shared<Lambertian>(Colorf(.12, .45, .15));
-    auto light = std::make_shared<DiffuseLight>(Colorf(15, 15, 15));
+    auto light = std::make_shared<DiffuseLight>(Colorf(8, 8, 8));
 
     objects.add(std::make_shared<YZRect>(0, 555, 0, 555, 555, green));
     objects.add(std::make_shared<YZRect>(0, 555, 0, 555, 0, red));
@@ -258,8 +259,45 @@ HittableList cornell_box() {
     objects.add(std::make_shared<XZRect>(0, 555, 0, 555, 555, white));
     objects.add(std::make_shared<XYRect>(0, 555, 0, 555, 555, white));
 
-    objects.add(std::make_shared<Box>(Vector3f(130, 0, 65), Vector3f(295, 165, 230), white));
-    objects.add(std::make_shared<Box>(Vector3f(265, 0, 295), Vector3f(430, 330, 460), white));
+
+    std::shared_ptr<Hittable> box1 = make_shared<Box>(Vector3f(0, 0, 0), Vector3f(165, 330, 165), white);
+    box1 = make_shared<RotateY>(box1, 15);
+    box1 = make_shared<Translate>(box1, Vector3f(265,0,295));
+    objects.add(box1);
+
+    std::shared_ptr<Hittable> box2 = make_shared<Box>(Vector3f(0,0,0), Vector3f(165,165,165), white);
+    box2 = make_shared<RotateY>(box2, -18);
+    box2 = make_shared<Translate>(box2, Vector3f(130,0,65));
+    objects.add(box2);
+
+    return objects;
+}
+
+HittableList cornell_smoke() {
+    HittableList objects;
+
+    auto red   = std::make_shared<Lambertian>(Colorf(.65, .05, .05));
+    auto white = std::make_shared<Lambertian>(Colorf(.73, .73, .73));
+    auto green = std::make_shared<Lambertian>(Colorf(.12, .45, .15));
+    auto light = std::make_shared<DiffuseLight>(Colorf(7, 7, 7));
+
+    objects.add(std::make_shared<YZRect>(0, 555, 0, 555, 555, green));
+    objects.add(std::make_shared<YZRect>(0, 555, 0, 555, 0, red));
+    objects.add(std::make_shared<XZRect>(113, 443, 127, 432, 554, light));
+    objects.add(std::make_shared<XZRect>(0, 555, 0, 555, 555, white));
+    objects.add(std::make_shared<XZRect>(0, 555, 0, 555, 0, white));
+    objects.add(std::make_shared<XYRect>(0, 555, 0, 555, 555, white));
+
+    std::shared_ptr<Hittable> box1 = make_shared<Box>(Vector3f(0,0,0), Vector3f(165,330,165), white);
+    box1 = make_shared<RotateY>(box1, 15);
+    box1 = make_shared<Translate>(box1, Vector3f(265,0,295));
+
+    std::shared_ptr<Hittable> box2 = make_shared<Box>(Vector3f(0,0,0), Vector3f(165,165,165), white);
+    box2 = make_shared<RotateY>(box2, -18);
+    box2 = make_shared<Translate>(box2, Vector3f(130,0,65));
+
+    objects.add(make_shared<ConstantMedium>(box1, 0.01, Colorf(0,0,0)));
+    objects.add(make_shared<ConstantMedium>(box2, 0.01, Colorf(1,1,1)));
 
     return objects;
 }
