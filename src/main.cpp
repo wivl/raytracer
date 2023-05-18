@@ -40,7 +40,7 @@ HittableList cornell_smoke();
 
 #define WIDTH 600
 #define HEIGHT 600
-#define SPP 200
+#define SPP 50
 #define MAX_RECURSION_DEPTH 50
 
 int main() {
@@ -87,13 +87,13 @@ int main() {
                 Ray r = camera.get_ray(u, v);
                 // FIX: color not correct
                 Colorf sample = ray_color(r, Vector3f(0, 0, 0), world, MAX_RECURSION_DEPTH);
-                sample.x() = clamp(sample.x(), 0, 1);
-                sample.y() = clamp(sample.y(), 0, 1);
-                sample.z() = clamp(sample.z(), 0, 1);
                 intensity += sample;
             }
             muliple_samples(intensity, SPP);
             // std::cout << intensity << std::endl;
+            intensity.x() = clamp(intensity.x(), 0, 1);
+            intensity.y() = clamp(intensity.y(), 0, 1);
+            intensity.z() = clamp(intensity.z(), 0, 1);
             image.set(w, h, color_intensity(intensity));
             #pragma omp critical
             {
@@ -251,7 +251,7 @@ HittableList cornell_box() {
     auto red   = std::make_shared<Lambertian>(Colorf(.65, .05, .05));
     auto white = std::make_shared<Lambertian>(Colorf(.73, .73, .73));
     auto green = std::make_shared<Lambertian>(Colorf(.12, .45, .15));
-    auto light = std::make_shared<DiffuseLight>(Colorf(8, 8, 8));
+    auto light = std::make_shared<DiffuseLight>(Colorf(15, 15, 15));
 
     objects.add(std::make_shared<YZRect>(0, 555, 0, 555, 555, green));
     objects.add(std::make_shared<YZRect>(0, 555, 0, 555, 0, red));
@@ -280,7 +280,7 @@ HittableList cornell_smoke() {
     auto red   = std::make_shared<Lambertian>(Colorf(.65, .05, .05));
     auto white = std::make_shared<Lambertian>(Colorf(.73, .73, .73));
     auto green = std::make_shared<Lambertian>(Colorf(.12, .45, .15));
-    auto light = std::make_shared<DiffuseLight>(Colorf(10, 6, 2));
+    auto light = std::make_shared<DiffuseLight>(Colorf(7, 7, 7));
 
     objects.add(std::make_shared<YZRect>(0, 555, 0, 555, 555, green));
     objects.add(std::make_shared<YZRect>(0, 555, 0, 555, 0, red));
